@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Post</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:#071025;color:#e6eef6;padding:28px}
+    .card{max-width:900px;margin:0 auto;background:#0b1220;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+    .meta{color:#94a3b8;font-size:13px;margin-bottom:8px}
+    .content{margin:12px 0;color:#dbeafe}
+    .comments{margin-top:18px}
+    .comment{padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:10px}
+    .btn{padding:8px 10px;border-radius:8px;border:0;background:#4fd1c5;color:#031019;cursor:pointer}
+    textarea{width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="title"><strong>Loading…</strong></div>
+    <div class="meta" id="meta"></div>
+    <div class="content" id="content"> </div>
+
+    <div style="display:flex;gap:12px;align-items:center">
+      <div><button id="btnUp" class="btn">▲ Upvote</button></div>
+      <div><button id="btnDown" class="btn">▼ Downvote</button></div>
+      <div id="voteInfo" style="margin-left:10px;color:#94a3b8"></div>
+    </div>
+
+    <div class="comments">
+      <h3>Comments</h3>
+      <div id="commentsList"></div>
+      <div style="margin-top:12px">
+        <textarea id="newComment" rows="4" placeholder="Write a comment..."></textarea>
+        <div style="margin-top:8px"><button id="btnComment" class="btn">Post comment</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Post detail page. Set window.API_BASE to the API root to enable backend (e.g. http://localhost:4000/api).
+    const API_BASE = window.API_BASE || '';
+    const LS_POSTS = 'ig_posts_v1';
+    const LS_COMMENTS = 'ig_comments_v1';
+    const LS_VOTES = 'ig_votes_v1';
+
+    const el = id => document.getElementById(id);
+    function qs(name){ return new URLSearchParams(location.search).get(name); }
+    function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+    const postId = qs('id');
+    if(!postId) document.body.innerHTML = '<div style="padding:28px;color:#fff">No post id specified (use ?id=POST_ID)</div>';
+
+    async function loadPost(){
+      if(API_BASE){
+        try{
+          const res = await fetch(API_BASE + '/posts/' + postId);
+          if(!res.ok) throw new Error('Not found');
+          const data = await res.json();
+          render(data);
+          return;
+        }catch(e){ console.warn('API load failed', e); }
+      }
+      // fallback localStorage
+      const posts = JSON.parse(localStorage.getItem(LS_POSTS) || '[]');
+      const p = posts.find(x=>String(x.id)===String(postId));
+      if(!p) return el('title').innerText = 'Post not found';
+      // build pseudo response
+      const comments = JSON.parse(localStorage.getItem(LS_COMMENTS) || '[]').filter(c=>String(c.post_id)===String(postId));
+      const votes = JSON.parse(localStorage.getItem(LS_VOTES) || '[]').filter(v=>String(v.post_id)===String(postId));
+      const score = votes.reduce((s,v)=>s+(v.value||0),0);
+      render(Object.assign({}, p, { votes: { score, count: votes.length }, comments }));
+    }
+
+    function render(post){
+      el('title').innerHTML = `<strong>${escapeHtml(post.title)}</strong>`;
+      el('meta').textContent = `${post.category} • by ${post.author ? escapeHtml(post.author.username || post.author) : 'unknown'} • ${new Date(post.created_at || post.created).toLocaleString()}`;
+      el('content').innerHTML = `<div>${escapeHtml(post.content)}</div>`;
+      el('voteInfo').textContent = `Score: ${post.votes ? post.votes.score : 0} • ${post.votes ? post.votes.count : 0} votes`;
+      // comments
+      const cl = el('commentsList'); cl.innerHTML = '';
+      const comments = post.comments || [];
+      if(!comments.length) cl.innerHTML = '<div class="meta">No comments yet</div>';
+      comments.forEach(c => {
+        const d = document.createElement('div'); d.className='comment';
+        d.innerHTML = `<div style="font-weight:700">${escapeHtml(c.author_username||c.author)}</div><div style="color:#94a3b8;font-size:13px">${new Date(c.created_at).toLocaleString()}</div><div style="margin-top:8px">${escapeHtml(c.content)}</div>`;
+        cl.appendChild(d);
+      });
+    }
+
+    async function postComment(){
+      const content = el('newComment').value.trim();
+      if(!content) return alert('Write something');
+      if(API_BASE){
+        const token = localStorage.getItem('ig_token');
+        const res = await fetch(API_BASE + '/posts/' + postId + '/comments', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ content }) });
+        const data = await res.json();
+        if(!res.ok) return alert(data.error || 'Comment failed');
+        el('newComment').value = '';
+        await loadPost();
+        return;
+      }
+      // fallback: save in LS
+      const comments = JSON.parse(localStorage.getItem(LS_COMMENTS) || '[]');
+      const id = comments.length?Math.max(...comments.map(c=>c.id))+1:1;
+      const now = new Date().toISOString();
+      // pseudo author from local user
+      const user = JSON.parse(localStorage.getItem('ig_user') || 'null');
+      comments.push({ id, post_id: postId, author_id: user?user.id:null, author_username: user?user.username:'anon', content, created_at: now });
+      localStorage.setItem(LS_COMMENTS, JSON.stringify(comments));
+      el('newComment').value='';
+      await loadPost();
+    }
+
+    async function vote(val){
+      if(API_BASE){
+        const token = localStorage.getItem('ig_token');
+        const res = await fetch(API_BASE + '/posts/' + postId + '/vote', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ value: val }) });
+        const data = await res.json();
+        if(!res.ok) return alert(data.error || 'Vote failed');
+        el('voteInfo').textContent = `Score: ${data.score} • ${data.count} votes`;
+        return;
+      }
+      // fallback LS votes
+      const votes = JSON.parse(localStorage.getItem(LS_VOTES) || '[]');
+      const user = JSON.parse(localStorage.getItem('ig_user') || 'null');
+      const userId = user ? user.id : 'anon';
+      const existingIndex = votes.findIndex(v=>String(v.post_id)===String(postId) && String(v.user_id)===String(userId));
+      if(existingIndex !== -1){
+        if(votes[existingIndex].value === val) votes.splice(existingIndex,1); // toggle off
+        else votes[existingIndex].value = val; // change
+      } else {
+        votes.push({ id: votes.length?Math.max(...votes.map(x=>x.id))+1:1, post_id: postId, user_id: userId, value: val, created_at: new Date().toISOString() });
+      }
+      localStorage.setItem(LS_VOTES, JSON.stringify(votes));
+      await loadPost();
+    }
+
+    document.getElementById('btnComment').addEventListener('click', postComment);
+    document.getElementById('btnUp').addEventListener('click', ()=>vote(1));
+    document.getElementById('btnDown').addEventListener('click', ()=>vote(-1));
+
+    loadPost();
+  </script>
+</body>
+</html>

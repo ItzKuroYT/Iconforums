@@ -146,7 +146,9 @@
     </div>
 
     <script>
-        // Simple front-end forum using localStorage. Replace with real backend for production.
+        // Simple front-end forum. If you deploy the backend, set window.API_BASE to the API root (e.g. "http://localhost:4000/api" or deployed URL).
+    // Example to enable backend: <script>window.API_BASE='http://localhost:4000/api'<\/script>
+        const API_BASE = window.API_BASE || '';
         const CATS = ['Bugs','Patches','Looking for team','Market'];
         const LS_USERS = 'ig_users_v1';
         const LS_POSTS = 'ig_posts_v1';
@@ -156,9 +158,19 @@
         const el = id => document.getElementById(id);
         const now = () => new Date().toISOString();
         const storage = {
+            // user storage remains local for client-side staff checks; auth will use backend if API_BASE is set
             getUsers(){ return JSON.parse(localStorage.getItem(LS_USERS) || '[]') },
             setUsers(u){ localStorage.setItem(LS_USERS, JSON.stringify(u)) },
-            getPosts(){ return JSON.parse(localStorage.getItem(LS_POSTS) || '[]') },
+            async getPosts(){
+                if(API_BASE){
+                    try{
+                        const res = await fetch(API_BASE + '/posts');
+                        if(!res.ok) throw new Error('Failed to fetch');
+                        return await res.json();
+                    }catch(e){ console.warn('API posts fetch failed, falling back to local', e); return JSON.parse(localStorage.getItem(LS_POSTS) || '[]'); }
+                }
+                return JSON.parse(localStorage.getItem(LS_POSTS) || '[]');
+            },
             setPosts(p){ localStorage.setItem(LS_POSTS, JSON.stringify(p)) },
         };
 
@@ -171,7 +183,7 @@
             if(!users.find(x=>x.username==='alice')) users.push({email:'alice@ex.com',username:'alice',password:'pass',staff:false,created:now()});
             storage.setUsers(users);
 
-            const posts = storage.getPosts();
+            const posts = JSON.parse(localStorage.getItem(LS_POSTS) || '[]');
             if(posts.length===0){
                 posts.push({id:1,title:'Welcome to IconGens','content':'First post. Use this demo to test features.','category':'Patches','author':'admin','authorEmail':ADMIN_EMAIL,created:now(),pinned:true});
                 posts.push({id:2,title:'Looking for a plot teammember','content':'i need a team member to help with my plot','category':'Looking for team','author':'alice','authorEmail':'alice@ex.com',created:now(),pinned:false});
@@ -191,7 +203,7 @@
                 const div = document.createElement('div');
                 div.innerHTML = `<span class="userBadge">${escapeHtml(user.username)}</span> <button id="btnLogout" class="secondary small">Logout</button>`;
                 authArea.appendChild(div);
-                el('btnLogout')?.addEventListener('click',()=>{ state.currentUser=null; renderAuth(); renderStaffPanel(); renderPosts(); });
+                el('btnLogout')?.addEventListener('click',()=>{ state.currentUser=null; localStorage.removeItem('ig_token'); localStorage.removeItem('ig_user'); renderAuth(); renderStaffPanel(); renderPosts(); });
             } else {
                 authArea.innerHTML = '<div class="muted small">Not signed in</div>';
             }
@@ -208,8 +220,9 @@
         }
 
         // posts
-        function renderPosts(){
-            const posts = storage.getPosts().slice().sort((a,b)=>{
+        async function renderPosts(){
+            const raw = await storage.getPosts();
+            const posts = (Array.isArray(raw)?raw:[]).slice().sort((a,b)=>{
                 if(a.pinned && !b.pinned) return -1;
                 if(!a.pinned && b.pinned) return 1;
                 return new Date(b.created) - new Date(a.created);
@@ -260,20 +273,32 @@
             });
         }
 
-        function viewPost(id){
-            const post = storage.getPosts().find(p=>p.id===id);
-            if(!post) return alert('Not found');
-            const txt = `${post.title}\n\n${post.content}\n\nCategory: ${post.category}\nAuthor: ${post.author} (${post.authorEmail})\nCreated: ${new Date(post.created).toLocaleString()}`;
-            alert(txt);
+        async function viewPost(id){
+            // open dedicated post page
+            window.location.href = 'post.html?id=' + encodeURIComponent(id);
         }
 
-        function deletePost(id){
+        async function deletePost(id){
+            if(API_BASE){
+                const token = localStorage.getItem('ig_token');
+                const res = await fetch(API_BASE + '/posts/' + id, { method: 'DELETE', headers: token?{ Authorization: 'Bearer ' + token }:{} });
+                if(res.status === 204){ renderPosts(); return; }
+                alert('Delete failed');
+                return;
+            }
             const posts = storage.getPosts().filter(p=>p.id!==id);
             storage.setPosts(posts);
             renderPosts();
         }
 
-        function togglePin(id){
+        async function togglePin(id){
+            if(API_BASE){
+                const token = localStorage.getItem('ig_token');
+                const res = await fetch(API_BASE + '/posts/' + id + '/pin', { method: 'POST', headers: token?{ Authorization: 'Bearer ' + token }:{} });
+                if(res.ok){ renderPosts(); return; }
+                alert('Pin/unpin failed');
+                return;
+            }
             const posts = storage.getPosts();
             const p = posts.find(x=>x.id===id);
             if(!p) return;
@@ -310,11 +335,24 @@
             el('showSignup').addEventListener('click', ()=>{ el('loginForm').classList.add('hidden'); el('signupForm').classList.remove('hidden'); });
 
             // signup
-            el('btnSignup').addEventListener('click', ()=>{
+            el('btnSignup').addEventListener('click', async ()=>{
                 const email = el('suEmail').value.trim().toLowerCase();
                 const username = el('suUsername').value.trim();
                 const password = el('suPassword').value;
                 if(!email || !username || !password) return alert('Fill all fields');
+                if(API_BASE){
+                    try{
+                        const res = await fetch(API_BASE + '/auth/signup', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, username, password }) });
+                        const data = await res.json();
+                        if(!res.ok) return alert(data.error || 'Signup failed');
+                        localStorage.setItem('ig_token', data.token);
+                        localStorage.setItem('ig_user', JSON.stringify(data.user));
+                        state.currentUser = data.user;
+                        renderAuth(); renderStaffPanel(); await renderPosts();
+                        alert('Signed up and logged in as '+data.user.username);
+                    }catch(err){ alert('Signup failed'); }
+                    return;
+                }
                 const users = storage.getUsers();
                 if(users.find(u=>u.username.toLowerCase()===username.toLowerCase())){
                     return alert('Username taken. Modify it by adding numbers or underscores.');
@@ -330,10 +368,22 @@
             });
 
             // login
-            el('btnLogin').addEventListener('click', ()=>{
+            el('btnLogin').addEventListener('click', async ()=>{
                 const username = el('liUsername').value.trim();
                 const password = el('liPassword').value;
                 if(!username || !password) return alert('Fill all fields');
+                if(API_BASE){
+                    try{
+                        const res = await fetch(API_BASE + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ username, password }) });
+                        const data = await res.json();
+                        if(!res.ok) return alert(data.error || 'Login failed');
+                        localStorage.setItem('ig_token', data.token);
+                        localStorage.setItem('ig_user', JSON.stringify(data.user));
+                        state.currentUser = data.user;
+                        renderAuth(); renderStaffPanel(); await renderPosts();
+                        return;
+                    }catch(err){ alert('Login failed'); return; }
+                }
                 const users = storage.getUsers();
                 const u = users.find(x=>x.username.toLowerCase()===username.toLowerCase() && x.password===password);
                 if(!u) return alert('Invalid username or password');
@@ -344,9 +394,20 @@
             // logout wired in renderAuth
 
             // staff management (admin)
-            el('btnAddStaff').addEventListener('click', ()=>{
+            el('btnAddStaff').addEventListener('click', async ()=>{
                 const mail = el('staffEmail').value.trim().toLowerCase();
                 if(!mail) return alert('Enter email');
+                if(API_BASE){
+                    const token = localStorage.getItem('ig_token');
+                    try{
+                        const res = await fetch(API_BASE + '/staff', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ emailToPromote: mail }) });
+                        const data = await res.json();
+                        if(!res.ok) return alert(data.error || 'Promote failed');
+                        alert('Promoted ' + mail);
+                        renderPosts();
+                        return;
+                    }catch(e){ alert('Promote failed'); return; }
+                }
                 const users = storage.getUsers();
                 const u = users.find(x=>x.email===mail);
                 if(!u) return alert('User not found');
@@ -371,12 +432,22 @@
                 el('newPostArea').classList.toggle('hidden');
             });
             el('btnCancelPost').addEventListener('click', ()=>{ el('newPostArea').classList.add('hidden'); });
-            el('btnCreatePost').addEventListener('click', ()=>{
+            el('btnCreatePost').addEventListener('click', async ()=>{
                 if(!canCreate()) return alert('Sign in to create posts.');
                 const title = el('postTitle').value.trim();
                 const content = el('postContent').value.trim();
                 const category = el('postCategory').value;
                 if(!title || !content) return el('postError').textContent='Fill title and content';
+                if(API_BASE){
+                    const token = localStorage.getItem('ig_token');
+                    try{
+                        const res = await fetch(API_BASE + '/posts', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ title, content, category }) });
+                        const data = await res.json();
+                        if(!res.ok) return el('postError').textContent = data.error || 'Create failed';
+                        el('postTitle').value=''; el('postContent').value=''; el('newPostArea').classList.add('hidden'); await renderPosts();
+                        return;
+                    }catch(e){ el('postError').textContent='Create failed'; return; }
+                }
                 const posts = storage.getPosts();
                 const id = posts.length?Math.max(...posts.map(p=>p.id))+1:1;
                 posts.push({id,title,content,category,author:state.currentUser.username,authorEmail:state.currentUser.email,created:now(),pinned:false});
@@ -387,6 +458,11 @@
             el('btnRefresh').addEventListener('click', ()=>{ renderPosts(); });
 
             // initial render
+            // hydrate user from localStorage (if using backend, login/signup store token & user there)
+            try{
+                const su = localStorage.getItem('ig_user');
+                if(su) state.currentUser = JSON.parse(su);
+            }catch(e){}
             renderAuth();
             renderStaffPanel();
             renderPosts();
