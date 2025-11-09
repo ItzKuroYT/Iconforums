@@ -1,487 +1,407 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>IconGens Forums</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <style>
-        :root{--bg:#0f1724;--card:#0b1220;--accent:#4fd1c5;--muted:#94a3b8;--danger:#ef4444; --glass: rgba(255,255,255,0.03)}
-        html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6eef6;background:linear-gradient(180deg,#071025 0%, #07162a 100%);padding:18px}
-        .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:320px 1fr;gap:18px}
-        .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,.6);border:1px solid rgba(255,255,255,0.03)}
-        h1{margin:0 0 10px 0;font-size:18px}
-        .muted{color:var(--muted);font-size:13px}
-        .cats button{display:block;width:100%;text-align:left;margin:6px 0;padding:10px;border-radius:8px;border:0;background:var(--glass);color:#dbeafe;cursor:pointer}
-        .search{display:flex;gap:8px;margin-bottom:10px}
-        input,textarea,select,button{font:inherit}
-        input,textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-        .posts .post{padding:12px;border-radius:8px;margin-bottom:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border:1px solid rgba(255,255,255,0.03)}
-        .post .meta{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
-        .btn{padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:#031019;cursor:pointer}
-        .secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-        .hidden{display:none}
-        .topbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
-        .userBadge{background:#0b2a2a;padding:6px 8px;border-radius:8px;color:#bff1eb;font-weight:600}
-        .danger{background:var(--danger);color:white}
-        .small{font-size:12px;padding:6px 8px}
-        .staff{color:#ffd166;font-weight:700}
-    </style>
+<meta charset="UTF-8">
+<title>IconGens Forums</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root {
+    --bg: #0f1724;
+    --card: #0b1220;
+    --accent: #4fd1c5;
+    --muted: #94a3b8;
+    --danger: #ef4444;
+    --glass: rgba(255,255,255,0.03);
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Inter, system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    color: #e6eef6;
+    background: linear-gradient(180deg, #071025 0%, #07162a 100%);
+    padding: 18px;
+}
+input, textarea, select, button {
+    font: inherit;
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+    background: transparent;
+    color: inherit;
+}
+button { cursor: pointer; }
+.wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 18px;
+}
+.card {
+    background: var(--card);
+    padding: 14px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(2,6,23,.6);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+h1 { margin: 0 0 10px 0; font-size: 18px; }
+.muted { color: var(--muted); font-size: 13px; }
+.btn { padding: 8px 10px; border-radius: 8px; border: 0; background: var(--accent); color: #031019; }
+.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.04); color: var(--muted); }
+.danger { background: var(--danger); color: white; }
+.small { font-size: 12px; padding: 6px 8px; }
+.hidden { display: none; }
+.cats button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 6px 0;
+    padding: 10px;
+    border-radius: 8px;
+    border: 0;
+    background: var(--glass);
+    color: #dbeafe;
+}
+.posts .post {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0));
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.post .meta {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+}
+.userBadge { background: #0b2a2a; padding: 6px 8px; border-radius: 8px; color: #bff1eb; font-weight: 600; }
+.staff { color: #ffd166; font-weight: 700; }
+</style>
 </head>
 <body>
-    <div class="wrap">
-        <aside class="card">
-            <div class="topbar">
-                <h1>IconGens Forums</h1>
-                <div id="authArea"></div>
-            </div>
-
-            <div class="muted">Categories</div>
-            <div class="cats" id="categories">
-                <button data-cat="All">All</button>
-                <button data-cat="Bugs">Bugs</button>
-                <button data-cat="Patches">Patches</button>
-                <button data-cat="Looking for team">Looking for team</button>
-                <button data-cat="Market">Market</button>
-            </div>
-
-            <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-            <div class="muted">Search posts</div>
-            <div style="margin-top:8px">
-                <div class="search">
-                    <input id="searchInput" placeholder="Search title or content..." />
-                    <button id="clearSearch" class="secondary">Clear</button>
-                </div>
-                <div style="margin-top:8px">
-                    <select id="searchCategory">
-                        <option value="">Any category</option>
-                        <option>Bugs</option>
-                        <option>Patches</option>
-                        <option>Looking for team</option>
-                        <option>Market</option>
-                    </select>
-                </div>
-            </div>
-
-            <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-            <div class="muted">Account</div>
-            <div style="margin-top:8px">
-                <div id="authForms">
-                    <div id="signupForm">
-                        <div style="font-size:13px;margin-bottom:6px">Sign up</div>
-                        <input id="suEmail" placeholder="Email" />
-                        <input id="suUsername" placeholder="Username (unique)" />
-                        <input id="suPassword" type="password" placeholder="Password" />
-                        <div style="display:flex;gap:8px;margin-top:8px">
-                            <button id="btnSignup" class="btn">Sign up</button>
-                            <button id="showLogin" class="secondary">Login</button>
-                        </div>
-                        <div class="muted" style="font-size:12px;margin-top:8px">Usernames must be unique. If a name is taken you must modify it (add numbers or underscores).</div>
-                    </div>
-
-                    <div id="loginForm" class="hidden">
-                        <div style="font-size:13px;margin-bottom:6px">Login</div>
-                        <input id="liUsername" placeholder="Username" />
-                        <input id="liPassword" type="password" placeholder="Password" />
-                        <div style="display:flex;gap:8px;margin-top:8px">
-                            <button id="btnLogin" class="btn">Login</button>
-                            <button id="showSignup" class="secondary">Sign up</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="staffPanel" class="hidden" style="margin-top:12px">
-                <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-                <div class="muted">Staff Management (admin only)</div>
-                <input id="staffEmail" placeholder="User email to promote" />
-                <div style="display:flex;gap:8px;margin-top:8px">
-                    <button id="btnAddStaff" class="btn">Add Staff</button>
-                    <button id="btnRevokeStaff" class="secondary">Revoke</button>
-                </div>
-                <div class="muted" style="font-size:12px;margin-top:8px">Promote by email. Only existing users can be promoted.</div>
-            </div>
-
-        </aside>
-
-        <main>
-            <div class="card">
-                <div class="topbar">
-                    <div>
-                        <strong id="currentCategory">All</strong>
-                        <div class="muted" style="font-size:13px">Discussion board</div>
-                    </div>
-                    <div>
-                        <button id="btnNewPost" class="btn">New Post</button>
-                        <button id="btnRefresh" class="secondary">Refresh</button>
-                    </div>
-                </div>
-
-                <div id="newPostArea" class="hidden" style="margin-bottom:12px">
-                    <input id="postTitle" placeholder="Post title" />
-                    <select id="postCategory" style="margin-top:8px">
-                        <option>Bugs</option>
-                        <option>Patches</option>
-                        <option>Looking for team</option>
-                        <option>Market</option>
-                    </select>
-                    <textarea id="postContent" rows="5" placeholder="Write your post..." style="margin-top:8px"></textarea>
-                    <div style="display:flex;gap:8px;margin-top:8px">
-                        <button id="btnCreatePost" class="btn">Create Post</button>
-                        <button id="btnCancelPost" class="secondary">Cancel</button>
-                    </div>
-                    <div id="postError" class="muted small" style="margin-top:8px"></div>
-                </div>
-
-                <div class="muted" style="margin-bottom:8px">Results</div>
-                <div id="postsList" class="posts"></div>
-            </div>
-
-            <div class="card" style="margin-top:12px">
-                <div class="muted">About / Notes</div>
-                <p class="muted" style="font-size:13px">
-                    This is a front-end proof-of-concept forum. Data is stored in the browser (localStorage). For production you should add a server, database, authentication, rate limiting and content moderation.
-                </p>
-            </div>
-        </main>
+<div class="wrap">
+<aside class="card">
+    <div class="topbar">
+        <h1>IconGens Forums</h1>
+        <div id="authArea"></div>
     </div>
 
-    <script>
-        // Simple front-end forum. If you deploy the backend, set window.API_BASE to the API root (e.g. "http://localhost:4000/api" or deployed URL).
-    // Example to enable backend: <script>window.API_BASE='http://localhost:4000/api'<\/script>
-        const API_BASE = window.API_BASE || '';
-        const CATS = ['Bugs','Patches','Looking for team','Market'];
-        const LS_USERS = 'ig_users_v1';
-        const LS_POSTS = 'ig_posts_v1';
-        const ADMIN_EMAIL = 'admin@example.com'; // seeded admin
+    <div class="muted">Categories</div>
+    <div class="cats" id="categories">
+        <button data-cat="All">All</button>
+        <button data-cat="Bugs">Bugs</button>
+        <button data-cat="Patches">Patches</button>
+        <button data-cat="Looking for team">Looking for team</button>
+        <button data-cat="Market">Market</button>
+    </div>
 
-        // utils
-        const el = id => document.getElementById(id);
-        const now = () => new Date().toISOString();
-        const storage = {
-            // user storage remains local for client-side staff checks; auth will use backend if API_BASE is set
-            getUsers(){ return JSON.parse(localStorage.getItem(LS_USERS) || '[]') },
-            setUsers(u){ localStorage.setItem(LS_USERS, JSON.stringify(u)) },
-            async getPosts(){
-                if(API_BASE){
-                    try{
-                        const res = await fetch(API_BASE + '/posts');
-                        if(!res.ok) throw new Error('Failed to fetch');
-                        return await res.json();
-                    }catch(e){ console.warn('API posts fetch failed, falling back to local', e); return JSON.parse(localStorage.getItem(LS_POSTS) || '[]'); }
-                }
-                return JSON.parse(localStorage.getItem(LS_POSTS) || '[]');
-            },
-            setPosts(p){ localStorage.setItem(LS_POSTS, JSON.stringify(p)) },
-        };
+    <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
+    <div class="muted">Search posts</div>
+    <div style="margin-top:8px">
+        <div class="search" style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="searchInput" placeholder="Search title or content..." />
+            <button id="clearSearch" class="secondary">Clear</button>
+        </div>
+        <select id="searchCategory">
+            <option value="">Any category</option>
+            <option>Bugs</option>
+            <option>Patches</option>
+            <option>Looking for team</option>
+            <option>Market</option>
+        </select>
+    </div>
 
-        // seed admin and sample posts if empty
-        (function seed(){
-            const users = storage.getUsers();
-            if(!users.find(x=>x.email===ADMIN_EMAIL)){
-                users.push({email:ADMIN_EMAIL,username:'admin',password:'admin',staff:true,created:now()});
-            }
-            if(!users.find(x=>x.username==='alice')) users.push({email:'alice@ex.com',username:'alice',password:'pass',staff:false,created:now()});
-            storage.setUsers(users);
+    <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
+    <div class="muted">Account</div>
+    <div style="margin-top:8px" id="authForms">
+        <div id="signupForm">
+            <div style="font-size:13px;margin-bottom:6px">Sign up</div>
+            <input id="suEmail" placeholder="Email" />
+            <input id="suUsername" placeholder="Username (unique)" />
+            <input id="suPassword" type="password" placeholder="Password" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btnSignup" class="btn">Sign up</button>
+                <button id="showLogin" class="secondary">Login</button>
+            </div>
+            <div class="muted" style="font-size:12px;margin-top:8px">
+                Usernames must be unique. Add numbers/underscores if taken.
+            </div>
+        </div>
 
-            const posts = JSON.parse(localStorage.getItem(LS_POSTS) || '[]');
-            if(posts.length===0){
-                posts.push({id:1,title:'Welcome to IconGens','content':'First post. Use this demo to test features.','category':'Patches','author':'admin','authorEmail':ADMIN_EMAIL,created:now(),pinned:true});
-                posts.push({id:2,title:'Looking for a plot teammember','content':'i need a team member to help with my plot','category':'Looking for team','author':'alice','authorEmail':'alice@ex.com',created:now(),pinned:false});
-                storage.setPosts(posts);
-            }
-        })();
+        <div id="loginForm" class="hidden">
+            <div style="font-size:13px;margin-bottom:6px">Login</div>
+            <input id="liUsername" placeholder="Username" />
+            <input id="liPassword" type="password" placeholder="Password" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btnLogin" class="btn">Login</button>
+                <button id="showSignup" class="secondary">Sign up</button>
+            </div>
+        </div>
+    </div>
 
-        // state
-        let state = {currentUser:null,filterText:'',filterCategory:'',selectedCategory:'All'};
+    <div id="staffPanel" class="hidden" style="margin-top:12px">
+        <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
+        <div class="muted">Staff Management (admin only)</div>
+        <input id="staffEmail" placeholder="User email to promote" />
+        <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="btnAddStaff" class="btn">Add Staff</button>
+            <button id="btnRevokeStaff" class="secondary">Revoke</button>
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:8px">Promote by email. Only existing users can be promoted.</div>
+    </div>
+</aside>
 
-        // auth UI
-        function renderAuth(){
-            const authArea = el('authArea');
-            const user = state.currentUser;
-            authArea.innerHTML = '';
-            if(user){
-                const div = document.createElement('div');
-                div.innerHTML = `<span class="userBadge">${escapeHtml(user.username)}</span> <button id="btnLogout" class="secondary small">Logout</button>`;
-                authArea.appendChild(div);
-                el('btnLogout')?.addEventListener('click',()=>{ state.currentUser=null; localStorage.removeItem('ig_token'); localStorage.removeItem('ig_user'); renderAuth(); renderStaffPanel(); renderPosts(); });
-            } else {
-                authArea.innerHTML = '<div class="muted small">Not signed in</div>';
-            }
-        }
+<main>
+<div class="card">
+    <div class="topbar">
+        <div>
+            <strong id="currentCategory">All</strong>
+            <div class="muted" style="font-size:13px">Discussion board</div>
+        </div>
+        <div>
+            <button id="btnNewPost" class="btn">New Post</button>
+            <button id="btnRefresh" class="secondary">Refresh</button>
+        </div>
+    </div>
 
-        // safe escape
-        function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+    <div id="newPostArea" class="hidden" style="margin-bottom:12px">
+        <input id="postTitle" placeholder="Post title" />
+        <select id="postCategory" style="margin-top:8px">
+            <option>Bugs</option>
+            <option>Patches</option>
+            <option>Looking for team</option>
+            <option>Market</option>
+        </select>
+        <textarea id="postContent" rows="5" placeholder="Write your post..." style="margin-top:8px"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="btnCreatePost" class="btn">Create Post</button>
+            <button id="btnCancelPost" class="secondary">Cancel</button>
+        </div>
+        <div id="postError" class="muted small" style="margin-top:8px"></div>
+    </div>
 
-        // show/hide staff panel (only ADMIN_EMAIL)
-        function renderStaffPanel(){
-            const panel = el('staffPanel');
-            if(state.currentUser && state.currentUser.email === ADMIN_EMAIL) panel.classList.remove('hidden');
-            else panel.classList.add('hidden');
-        }
+    <div class="muted" style="margin-bottom:8px">Results</div>
+    <div id="postsList" class="posts"></div>
+</div>
 
-        // posts
-        async function renderPosts(){
-            const raw = await storage.getPosts();
-            const posts = (Array.isArray(raw)?raw:[]).slice().sort((a,b)=>{
-                if(a.pinned && !b.pinned) return -1;
-                if(!a.pinned && b.pinned) return 1;
-                return new Date(b.created) - new Date(a.created);
-            });
-            const container = el('postsList');
-            container.innerHTML = '';
-            const q = state.filterText.toLowerCase().trim();
-            const catFilter = state.filterCategory;
-            posts.filter(p=>{
-                if(catFilter && p.category !== catFilter) return false;
-                if(!q) return true;
-                return (p.title+p.content+p.author).toLowerCase().includes(q);
-            }).forEach(p=>{
-                const d = document.createElement('div'); d.className='post';
-                d.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
-                        <div>
-                            <div style="display:flex;gap:8px;align-items:center">
-                                <strong>${escapeHtml(p.title)}</strong>
-                                ${p.pinned?'<span class="staff small">PINNED</span>':''}
-                            </div>
-                            <div class="meta">
-                                <div>${escapeHtml(p.category)} • by <span class="${isStaff(p.authorEmail)?'staff':''}">${escapeHtml(p.author)}</span></div>
-                                <div>${new Date(p.created).toLocaleString()}</div>
-                            </div>
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:6px">
-                            <button class="secondary small" data-id="${p.id}" data-action="view">View</button>
-                            ${canModerate()?`<button class="small" data-id="${p.id}" data-action="delete">Delete</button><button class="small" data-id="${p.id}" data-action="pin">${p.pinned?'Unpin':'Pin'}</button>`:''}
-                        </div>
-                    </div>
-                    <p style="margin-top:8px;color:var(--muted)">${escapeHtml(p.content).slice(0,300)}${p.content.length>300?'…':''}</p>
-                `;
-                container.appendChild(d);
-            });
-            bindPostButtons();
-        }
+<div class="card" style="margin-top:12px">
+    <div class="muted">About / Notes</div>
+    <p class="muted" style="font-size:13px">
+        This is a front-end demo forum. Data is stored in browser localStorage. For production, implement a backend, database, authentication, rate-limiting, and content moderation.
+    </p>
+</div>
+</main>
+</div>
 
-        function bindPostButtons(){
-            document.querySelectorAll('[data-action="view"]').forEach(b=>{
-                b.onclick = ()=>{ const pid=+b.dataset.id; viewPost(pid); };
-            });
-            document.querySelectorAll('[data-action="delete"]').forEach(b=>{
-                b.onclick = ()=>{ if(confirm('Delete post?')){ deletePost(+b.dataset.id); } };
-            });
-            document.querySelectorAll('[data-action="pin"]').forEach(b=>{
-                b.onclick = ()=>{ togglePin(+b.dataset.id); };
-            });
-        }
+<script>
+const API_BASE = window.API_BASE || '';
+const LS_USERS = 'ig_users_v1';
+const LS_POSTS = 'ig_posts_v1';
+const ADMIN_EMAIL = 'admin@example.com';
+const el = id=>document.getElementById(id);
+const now = ()=>new Date().toISOString();
 
-        async function viewPost(id){
-            // open dedicated post page
-            window.location.href = 'post.html?id=' + encodeURIComponent(id);
-        }
-
-        async function deletePost(id){
-            if(API_BASE){
-                const token = localStorage.getItem('ig_token');
-                const res = await fetch(API_BASE + '/posts/' + id, { method: 'DELETE', headers: token?{ Authorization: 'Bearer ' + token }:{} });
-                if(res.status === 204){ renderPosts(); return; }
-                alert('Delete failed');
-                return;
-            }
-            const posts = await storage.getPosts();
-            const filtered = (Array.isArray(posts)?posts:[]).filter(p=>p.id!==id);
-            storage.setPosts(filtered);
-            renderPosts();
-        }
-
-        async function togglePin(id){
-            if(API_BASE){
-                const token = localStorage.getItem('ig_token');
-                const res = await fetch(API_BASE + '/posts/' + id + '/pin', { method: 'POST', headers: token?{ Authorization: 'Bearer ' + token }:{} });
-                if(res.ok){ renderPosts(); return; }
-                alert('Pin/unpin failed');
-                return;
-            }
-            const posts = await storage.getPosts();
-            const arr = Array.isArray(posts)?posts:[];
-            const p = arr.find(x=>x.id===id);
-            if(!p) return;
-            p.pinned = !p.pinned;
-            storage.setPosts(arr);
-            renderPosts();
-        }
-
-        // permissions
-        function canCreate(){
-            return !!state.currentUser;
-        }
-        function canModerate(){
-            return state.currentUser && state.currentUser.staff;
-        }
-        function isStaff(email){
-            const users = storage.getUsers();
-            return users.find(u=>u.email===email && u.staff);
-        }
-
-        // events
-        function init(){
-            // category buttons
-            document.querySelectorAll('#categories button').forEach(btn=>{
-                btn.addEventListener('click', ()=>{ state.selectedCategory = btn.dataset.cat; el('currentCategory').textContent = btn.dataset.cat; state.filterCategory = btn.dataset.cat==='All'?'':btn.dataset.cat; renderPosts(); });
-            });
-            // search
-            el('searchInput').addEventListener('input', e=>{ state.filterText = e.target.value; renderPosts(); });
-            el('clearSearch').addEventListener('click', ()=>{ el('searchInput').value=''; state.filterText=''; renderPosts(); });
-            el('searchCategory').addEventListener('change', e=>{ state.filterCategory = e.target.value; renderPosts(); });
-
-            // toggle forms
-            el('showLogin').addEventListener('click', ()=>{ el('signupForm').classList.add('hidden'); el('loginForm').classList.remove('hidden'); });
-            el('showSignup').addEventListener('click', ()=>{ el('loginForm').classList.add('hidden'); el('signupForm').classList.remove('hidden'); });
-
-            // signup
-            el('btnSignup').addEventListener('click', async ()=>{
-                const email = el('suEmail').value.trim().toLowerCase();
-                const username = el('suUsername').value.trim();
-                const password = el('suPassword').value;
-                if(!email || !username || !password) return alert('Fill all fields');
-                if(API_BASE){
-                    try{
-                        const res = await fetch(API_BASE + '/auth/signup', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, username, password }) });
-                        const data = await res.json();
-                        if(!res.ok) return alert(data.error || 'Signup failed');
-                        localStorage.setItem('ig_token', data.token);
-                        localStorage.setItem('ig_user', JSON.stringify(data.user));
-                        state.currentUser = data.user;
-                        renderAuth(); renderStaffPanel(); await renderPosts();
-                        alert('Signed up and logged in as '+data.user.username);
-                    }catch(err){ alert('Signup failed'); }
-                    return;
-                }
-                const users = storage.getUsers();
-                if(users.find(u=>u.username.toLowerCase()===username.toLowerCase())){
-                    return alert('Username taken. Modify it by adding numbers or underscores.');
-                }
-                if(users.find(u=>u.email===email)){
-                    return alert('An account with that email already exists.');
-                }
-                const u = {email,username,password,staff:false,created:now()};
-                users.push(u); storage.setUsers(users);
-                state.currentUser = u;
-                renderAuth(); renderStaffPanel(); renderPosts();
-                alert('Signed up and logged in as '+username);
-            });
-
-            // login
-            el('btnLogin').addEventListener('click', async ()=>{
-                const username = el('liUsername').value.trim();
-                const password = el('liPassword').value;
-                if(!username || !password) return alert('Fill all fields');
-                if(API_BASE){
-                    try{
-                        const res = await fetch(API_BASE + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ username, password }) });
-                        const data = await res.json();
-                        if(!res.ok) return alert(data.error || 'Login failed');
-                        localStorage.setItem('ig_token', data.token);
-                        localStorage.setItem('ig_user', JSON.stringify(data.user));
-                        state.currentUser = data.user;
-                        renderAuth(); renderStaffPanel(); await renderPosts();
-                        return;
-                    }catch(err){ alert('Login failed'); return; }
-                }
-                const users = storage.getUsers();
-                const u = users.find(x=>x.username.toLowerCase()===username.toLowerCase() && x.password===password);
-                if(!u) return alert('Invalid username or password');
-                state.currentUser = u;
-                renderAuth(); renderStaffPanel(); renderPosts();
-            });
-
-            // logout wired in renderAuth
-
-            // staff management (admin)
-            el('btnAddStaff').addEventListener('click', async ()=>{
-                const mail = el('staffEmail').value.trim().toLowerCase();
-                if(!mail) return alert('Enter email');
-                if(API_BASE){
-                    const token = localStorage.getItem('ig_token');
-                    try{
-                        const res = await fetch(API_BASE + '/staff', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ emailToPromote: mail }) });
-                        const data = await res.json();
-                        if(!res.ok) return alert(data.error || 'Promote failed');
-                        alert('Promoted ' + mail);
-                        renderPosts();
-                        return;
-                    }catch(e){ alert('Promote failed'); return; }
-                }
-                const users = storage.getUsers();
-                const u = users.find(x=>x.email===mail);
-                if(!u) return alert('User not found');
-                u.staff = true; storage.setUsers(users);
-                alert(u.username+' promoted to staff');
-                renderPosts();
-            });
-            el('btnRevokeStaff').addEventListener('click', ()=>{
-                const mail = el('staffEmail').value.trim().toLowerCase();
-                if(!mail) return alert('Enter email');
-                const users = storage.getUsers();
-                const u = users.find(x=>x.email===mail);
-                if(!u) return alert('User not found');
-                u.staff = false; storage.setUsers(users);
-                alert(u.username+' staff revoked');
-                renderPosts();
-            });
-
-            // new post area
-            el('btnNewPost').addEventListener('click', ()=>{
-                if(!canCreate()) return alert('Sign in to create posts.');
-                el('newPostArea').classList.toggle('hidden');
-            });
-            el('btnCancelPost').addEventListener('click', ()=>{ el('newPostArea').classList.add('hidden'); });
-            el('btnCreatePost').addEventListener('click', async ()=>{
-                if(!canCreate()){
-                    // friendlier message when using backend
-                    if(API_BASE) return el('postError').textContent = 'Sign in to create posts (use login form)';
-                    return alert('Sign in to create posts.');
-                }
-                const title = el('postTitle').value.trim();
-                const content = el('postContent').value.trim();
-                const category = el('postCategory').value;
-                if(!title || !content) return el('postError').textContent='Fill title and content';
-                if(API_BASE){
-                    const token = localStorage.getItem('ig_token');
-                    try{
-                        const res = await fetch(API_BASE + '/posts', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ title, content, category }) });
-                        const text = await res.text();
-                        let data;
-                        try{ data = JSON.parse(text); }catch(e){ data = { error: text }; }
-                        if(!res.ok){
-                            console.error('Create post failed:', res.status, data);
-                            el('postError').textContent = (data && data.error) ? `${res.status} ${data.error}` : `Create failed (${res.status})`;
-                            return;
-                        }
-                        el('postTitle').value=''; el('postContent').value=''; el('newPostArea').classList.add('hidden'); await renderPosts();
-                        return;
-                    }catch(e){ console.error('Create post exception', e); el('postError').textContent='Create failed (network)'; return; }
-                }
-                const posts = await storage.getPosts();
-                const arr = Array.isArray(posts)?posts:[];
-                const id = arr.length?Math.max(...arr.map(p=>p.id))+1:1;
-                arr.push({id,title,content,category,author:state.currentUser.username,authorEmail:state.currentUser.email,created:now(),pinned:false});
-                storage.setPosts(arr);
-                el('postTitle').value=''; el('postContent').value=''; el('newPostArea').classList.add('hidden'); renderPosts();
-            });
-
-            el('btnRefresh').addEventListener('click', ()=>{ renderPosts(); });
-
-            // initial render
-            // hydrate user from localStorage (if using backend, login/signup store token & user there)
+const storage = {
+    getUsers: ()=>JSON.parse(localStorage.getItem(LS_USERS)||'[]'),
+    setUsers: u=>localStorage.setItem(LS_USERS,JSON.stringify(u)),
+    async getPosts() {
+        if(API_BASE){
             try{
-                const su = localStorage.getItem('ig_user');
-                if(su) state.currentUser = JSON.parse(su);
-            }catch(e){}
-            renderAuth();
-            renderStaffPanel();
-            renderPosts();
+                const res = await fetch(API_BASE+'/posts');
+                if(!res.ok) throw new Error('Failed');
+                return await res.json();
+            }catch(e){ console.warn('Fallback to local posts',e); }
         }
+        return JSON.parse(localStorage.getItem(LS_POSTS)||'[]');
+    },
+    setPosts: p=>localStorage.setItem(LS_POSTS,JSON.stringify(p))
+};
 
-        init();
-    </script>
+// Seed initial users & posts
+(function seed(){
+    let users = storage.getUsers();
+    if(!users.find(u=>u.email===ADMIN_EMAIL)) users.push({email:ADMIN_EMAIL,username:'admin',password:'admin',staff:true,created:now()});
+    if(!users.find(u=>u.username==='alice')) users.push({email:'alice@ex.com',username:'alice',password:'pass',staff:false,created:now()});
+    storage.setUsers(users);
+
+    let posts = JSON.parse(localStorage.getItem(LS_POSTS)||'[]');
+    if(posts.length===0){
+        posts = [
+            {id:1,title:'Welcome to IconGens',content:'First post. Use this demo to test features.','category':'Patches','author':'admin','authorEmail':ADMIN_EMAIL,created:now(),pinned:true},
+            {id:2,title:'Looking for a plot teammember',content:'i need a team member to help with my plot','category':'Looking for team','author':'alice','authorEmail':'alice@ex.com',created:now(),pinned:false}
+        ];
+        storage.setPosts(posts);
+    }
+})();
+
+let state={currentUser:null,filterText:'',filterCategory:'',selectedCategory:'All'};
+
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function canCreate(){ return !!state.currentUser; }
+function canModerate(){ return state.currentUser && state.currentUser.staff; }
+function isStaff(email){ return storage.getUsers().find(u=>u.email===email && u.staff); }
+
+function renderAuth(){
+    const authArea = el('authArea');
+    const user = state.currentUser;
+    authArea.innerHTML='';
+    if(user){
+        const div=document.createElement('div');
+        div.innerHTML=`<span class="userBadge">${escapeHtml(user.username)}</span> <button id="btnLogout" class="secondary small">Logout</button>`;
+        authArea.appendChild(div);
+        el('btnLogout').onclick=()=>{
+            state.currentUser=null;
+            localStorage.removeItem('ig_user');
+            renderAuth(); renderStaffPanel(); renderPosts();
+        };
+    } else authArea.innerHTML='<div class="muted small">Not signed in</div>';
+}
+
+function renderStaffPanel(){
+    const panel = el('staffPanel');
+    if(state.currentUser && state.currentUser.email===ADMIN_EMAIL) panel.classList.remove('hidden');
+    else panel.classList.add('hidden');
+}
+
+async function renderPosts(){
+    const raw = await storage.getPosts();
+    const posts = (Array.isArray(raw)?raw:[]).slice().sort((a,b)=>{
+        if(a.pinned&&!b.pinned) return -1;
+        if(!a.pinned&&b.pinned) return 1;
+        return new Date(b.created)-new Date(a.created);
+    });
+    const container = el('postsList');
+    container.innerHTML='';
+    const q = state.filterText.toLowerCase().trim();
+    const catFilter = state.filterCategory;
+    posts.filter(p=>{
+        if(catFilter && p.category!==catFilter) return false;
+        if(!q) return true;
+        return (p.title+p.content+p.author).toLowerCase().includes(q);
+    }).forEach(p=>{
+        const d = document.createElement('div');
+        d.className='post';
+        d.innerHTML=`
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+                <div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <strong>${escapeHtml(p.title)}</strong>
+                        ${p.pinned?'<span class="staff small">PINNED</span>':''}
+                    </div>
+                    <div class="meta">
+                        <div>${escapeHtml(p.category)} • by <span class="${isStaff(p.authorEmail)?'staff':''}">${escapeHtml(p.author)}</span></div>
+                        <div>${new Date(p.created).toLocaleString()}</div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                    <button class="secondary small" data-id="${p.id}" data-action="view">View</button>
+                    ${canModerate()?`<button class="small" data-id="${p.id}" data-action="delete">Delete</button><button class="small" data-id="${p.id}" data-action="pin">${p.pinned?'Unpin':'Pin'}</button>`:''}
+                </div>
+            </div>
+            <p style="margin-top:8px;color:var(--muted)">${escapeHtml(p.content).slice(0,300)}${p.content.length>300?'…':''}</p>
+        `;
+        container.appendChild(d);
+    });
+    bindPostButtons();
+}
+
+function bindPostButtons(){
+    document.querySelectorAll('[data-action="view"]').forEach(b=>b.onclick=()=>viewPost(+b.dataset.id));
+    document.querySelectorAll('[data-action="delete"]').forEach(b=>b.onclick=()=>{if(confirm('Delete post?')) deletePost(+b.dataset.id);});
+    document.querySelectorAll('[data-action="pin"]').forEach(b=>b.onclick=()=>togglePin(+b.dataset.id));
+}
+
+function viewPost(id){ window.location.href='post.html?id='+encodeURIComponent(id); }
+
+async function deletePost(id){
+    const posts = await storage.getPosts();
+    storage.setPosts(posts.filter(p=>p.id!==id));
+    renderPosts();
+}
+
+async function togglePin(id){
+    const posts = await storage.getPosts();
+    const p = posts.find(x=>x.id===id);
+    if(!p) return;
+    p.pinned=!p.pinned;
+    storage.setPosts(posts);
+    renderPosts();
+}
+
+function signup(){
+    const email=el('suEmail').value.trim(), username=el('suUsername').value.trim(), pwd=el('suPassword').value.trim();
+    const users=storage.getUsers();
+    if(!email||!username||!pwd){ el('postError').textContent='All fields required'; return; }
+    if(users.find(u=>u.username===username)){ el('postError').textContent='Username taken'; return; }
+    const user={email,username,password:pwd,staff:false,created:now()};
+    users.push(user); storage.setUsers(users);
+    state.currentUser=user; localStorage.setItem('ig_user',JSON.stringify(user));
+    el('postError').textContent=''; renderAuth(); renderStaffPanel(); renderPosts();
+}
+
+function login(){
+    const username=el('liUsername').value.trim(), pwd=el('liPassword').value.trim();
+    const user=storage.getUsers().find(u=>u.username===username&&u.password===pwd);
+    if(!user){ el('postError').textContent='Invalid credentials'; return; }
+    state.currentUser=user; localStorage.setItem('ig_user',JSON.stringify(user));
+    el('postError').textContent=''; renderAuth(); renderStaffPanel(); renderPosts();
+}
+
+async function createPost(){
+    const title = el('postTitle').value.trim();
+    const content = el('postContent').value.trim();
+    const category = el('postCategory').value;
+    if(!title||!content){ el('postError').textContent='Title & content required'; return; }
+    const posts = await storage.getPosts();
+    const newPost = {id:posts.length?Math.max(...posts.map(p=>p.id))+1:1,title,content,category,author:state.currentUser.username,authorEmail:state.currentUser.email,created:now(),pinned:false};
+    posts.push(newPost); storage.setPosts(posts);
+    el('postTitle').value=''; el('postContent').value=''; el('postError').textContent='';
+    el('newPostArea').classList.add('hidden'); renderPosts();
+}
+
+function modifyStaff(add=true){
+    const email = el('staffEmail').value.trim();
+    const users = storage.getUsers();
+    const user = users.find(u=>u.email===email);
+    if(!user){ alert('User not found'); return; }
+    user.staff=add; storage.setUsers(users); renderPosts();
+}
+
+function init(){
+    document.querySelectorAll('#categories button').forEach(btn=>btn.onclick=()=>{
+        state.selectedCategory=btn.dataset.cat;
+        el('currentCategory').textContent=btn.dataset.cat;
+        state.filterCategory=btn.dataset.cat==='All'?'':btn.dataset.cat;
+        renderPosts();
+    });
+    el('searchInput').oninput=e=>{ state.filterText=e.target.value; renderPosts(); };
+    el('clearSearch').onclick=()=>{ el('searchInput').value=''; state.filterText=''; renderPosts(); };
+    el('searchCategory').onchange=e=>{ state.filterCategory=e.target.value; renderPosts(); };
+    el('showLogin').onclick=()=>{ el('signupForm').classList.add('hidden'); el('loginForm').classList.remove('hidden'); };
+    el('showSignup').onclick=()=>{ el('loginForm').classList.add('hidden'); el('signupForm').classList.remove('hidden'); };
+    el('btnSignup').onclick=signup;
+    el('btnLogin').onclick=login;
+    el('btnNewPost').onclick=()=>el('newPostArea').classList.remove('hidden');
+    el('btnCancelPost').onclick=()=>{ el('newPostArea').classList.add('hidden'); el('postTitle').value=''; el('postContent').value=''; el('postError').textContent=''; };
+    el('btnCreatePost').onclick=createPost;
+    el('btnAddStaff').onclick=()=>modifyStaff(true);
+    el('btnRevokeStaff').onclick=()=>modifyStaff(false);
+    const savedUser=JSON.parse(localStorage.getItem('ig_user')||'null');
+    if(savedUser) state.currentUser=savedUser;
+    renderAuth(); renderStaffPanel(); renderPosts();
+}
+
+window.onload=init;
+</script>
 </body>
 </html>
