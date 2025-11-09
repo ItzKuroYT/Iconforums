@@ -286,8 +286,9 @@
                 alert('Delete failed');
                 return;
             }
-            const posts = storage.getPosts().filter(p=>p.id!==id);
-            storage.setPosts(posts);
+            const posts = await storage.getPosts();
+            const filtered = (Array.isArray(posts)?posts:[]).filter(p=>p.id!==id);
+            storage.setPosts(filtered);
             renderPosts();
         }
 
@@ -299,11 +300,12 @@
                 alert('Pin/unpin failed');
                 return;
             }
-            const posts = storage.getPosts();
-            const p = posts.find(x=>x.id===id);
+            const posts = await storage.getPosts();
+            const arr = Array.isArray(posts)?posts:[];
+            const p = arr.find(x=>x.id===id);
             if(!p) return;
             p.pinned = !p.pinned;
-            storage.setPosts(posts);
+            storage.setPosts(arr);
             renderPosts();
         }
 
@@ -433,7 +435,11 @@
             });
             el('btnCancelPost').addEventListener('click', ()=>{ el('newPostArea').classList.add('hidden'); });
             el('btnCreatePost').addEventListener('click', async ()=>{
-                if(!canCreate()) return alert('Sign in to create posts.');
+                if(!canCreate()){
+                    // friendlier message when using backend
+                    if(API_BASE) return el('postError').textContent = 'Sign in to create posts (use login form)';
+                    return alert('Sign in to create posts.');
+                }
                 const title = el('postTitle').value.trim();
                 const content = el('postContent').value.trim();
                 const category = el('postCategory').value;
@@ -442,16 +448,23 @@
                     const token = localStorage.getItem('ig_token');
                     try{
                         const res = await fetch(API_BASE + '/posts', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, token?{ Authorization: 'Bearer ' + token }:{}), body: JSON.stringify({ title, content, category }) });
-                        const data = await res.json();
-                        if(!res.ok) return el('postError').textContent = data.error || 'Create failed';
+                        const text = await res.text();
+                        let data;
+                        try{ data = JSON.parse(text); }catch(e){ data = { error: text }; }
+                        if(!res.ok){
+                            console.error('Create post failed:', res.status, data);
+                            el('postError').textContent = (data && data.error) ? `${res.status} ${data.error}` : `Create failed (${res.status})`;
+                            return;
+                        }
                         el('postTitle').value=''; el('postContent').value=''; el('newPostArea').classList.add('hidden'); await renderPosts();
                         return;
-                    }catch(e){ el('postError').textContent='Create failed'; return; }
+                    }catch(e){ console.error('Create post exception', e); el('postError').textContent='Create failed (network)'; return; }
                 }
-                const posts = storage.getPosts();
-                const id = posts.length?Math.max(...posts.map(p=>p.id))+1:1;
-                posts.push({id,title,content,category,author:state.currentUser.username,authorEmail:state.currentUser.email,created:now(),pinned:false});
-                storage.setPosts(posts);
+                const posts = await storage.getPosts();
+                const arr = Array.isArray(posts)?posts:[];
+                const id = arr.length?Math.max(...arr.map(p=>p.id))+1:1;
+                arr.push({id,title,content,category,author:state.currentUser.username,authorEmail:state.currentUser.email,created:now(),pinned:false});
+                storage.setPosts(arr);
                 el('postTitle').value=''; el('postContent').value=''; el('newPostArea').classList.add('hidden'); renderPosts();
             });
 
