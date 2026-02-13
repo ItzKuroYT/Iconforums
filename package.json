@@ -1,0 +1,22 @@
+{
+  "name": "iconforums",
+  "version": "1.0.0",
+  "description": "A full featured forums web application built with vanilla JS and Vercel serverless functions",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod",
+    "build": "echo 'Ready for Vercel deployment'"
+  },
+  "keywords": ["forum", "community", "discussion"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.1.2",
+    "cookie-parser": "^1.4.6"
+  },
+  "devDependencies": {
+    "@vercel/node": "^2.0.0"
+  }
+}

@@ -1,103 +1,102 @@
-// main.js
-// GitHub Copilot
-// Forum client-side logic using localStorage (no backend).
-// Assumes corresponding HTML elements (forms, inputs, containers) exist.
+// js/api.js - API Client Library
+// All communication with backend API routes
 
-(() => {
-    // Config
-    const CATEGORIES = ["Bugs", "Patches", "Looking for team", "Market"];
-    const LS_USERS = "ig_users";
-    const LS_POSTS = "ig_posts";
-    const LS_STAFF = "ig_staff";
-    const LS_SESSION = "ig_session";
+const API = {
+  BASE: '/api',
 
-    // Helpers for localStorage
-    const load = (key, fallback) => {
-        try {
-            const v = localStorage.getItem(key);
-            return v ? JSON.parse(v) : fallback;
-        } catch {
-            return fallback;
-        }
-    };
-    const save = (key, value) => {
-        localStorage.setItem(key, JSON.stringify(value));
+  async request(endpoint, options = {}) {
+    const url = `${this.BASE}${endpoint}`;
+    const config = {
+      method: options.method || 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      credentials: 'include', // Include cookies for auth
+      ...options
     };
 
-    // Initialize storage if needed
-    if (!load(LS_USERS, null)) save(LS_USERS, []);
-    if (!load(LS_POSTS, null)) save(LS_POSTS, []);
-    if (!load(LS_STAFF, null)) {
-        // Example: initial staff list can include the email that first creates admin
-        save(LS_STAFF, []);
+    if (options.body && typeof options.body === 'object') {
+      config.body = JSON.stringify(options.body);
     }
 
-    // Session
-    const getSession = () => load(LS_SESSION, null);
-    const setSession = (user) => save(LS_SESSION, user);
-    const clearSession = () => localStorage.removeItem(LS_SESSION);
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
 
-    // Data models
-    const getUsers = () => load(LS_USERS, []);
-    const setUsers = (u) => save(LS_USERS, u);
-    const getPosts = () => load(LS_POSTS, []);
-    const setPosts = (p) => save(LS_POSTS, p);
-    const getStaffEmails = () => load(LS_STAFF, []);
-    const setStaffEmails = (s) => save(LS_STAFF, s);
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
 
-    // Utilities
-    const nowISO = () => new Date().toISOString();
-    const sanitize = (s) => (s || "").toString().trim();
-    const isStaffEmail = (email) => getStaffEmails().includes(email);
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
 
-    // Username rules:
-    // - 3..20 chars
-    // - letters, numbers, underscores
-    // - must be unique; if taken, signup fails and suggestion is offered to append numbers/underscore
-    const usernameValid = (username) => /^[A-Za-z0-9_]{3,20}$/.test(username);
+  // Auth
+  async signup(email, username, password) {
+    return this.request('/auth/signup', {
+      method: 'POST',
+      body: { email, username, password }
+    });
+  },
 
-    const usernameAvailable = (username) => {
-        const users = getUsers();
-        return !users.some((u) => u.username.toLowerCase() === username.toLowerCase());
-    };
+  async login(emailOrUsername, password) {
+    return this.request('/auth/login', {
+      method: 'POST',
+      body: { emailOrUsername, password }
+    });
+  },
 
-    const suggestUsername = (base) => {
-        base = base.replace(/[^A-Za-z0-9_]/g, "").slice(0, 16) || "user";
-        for (let i = 1; i < 1000; i++) {
-            const candidate = base + (i === 1 ? "_" : i);
-            if (usernameAvailable(candidate)) return candidate;
-        }
-        return base + "_" + Date.now();
-    };
+  async logout() {
+    return this.request('/auth/logout', { method: 'POST' });
+  },
 
-    // Auth: simple email/password (hashed password not implemented; this is demo only)
-    function signup(email, password, username) {
-        email = sanitize(email).toLowerCase();
-        password = sanitize(password);
-        username = sanitize(username);
+  async checkAuth() {
+    return this.request('/auth/check');
+  },
 
-        if (!email || !password || !username) return { ok: false, err: "Missing fields" };
-        if (!usernameValid(username)) return { ok: false, err: "Username must be 3-20 chars: letters, numbers, underscores" };
-        if (!usernameAvailable(username)) {
-            const suggestion = suggestUsername(username);
-            return { ok: false, err: "Username taken. Try: " + suggestion, suggestion };
-        }
+  // Posts
+  async getPosts() {
+    return this.request('/posts');
+  },
 
-        const users = getUsers();
-        if (users.some((u) => u.email === email)) return { ok: false, err: "Email already registered" };
+  async getPost(id) {
+    return this.request(`/posts/${id}`);
+  },
 
-        const user = {
-            id: "u_" + Date.now(),
-            email,
-            password, // NOTE: storing plaintext in localStorage is insecure. Use a backend in real apps.
-            username,
-            createdAt: nowISO()
-        };
-        users.push(user);
-        setUsers(users);
+  async createPost(title, body, category) {
+    return this.request('/posts', {
+      method: 'POST',
+      body: { title, body, category }
+    });
+  },
 
-        // auto-mark as staff if email in staff list
-        const sessionUser = { id: user.id, email: user.email, username: user.username, isStaff: isStaffEmail(user.email) };
+  // Comments
+  async addComment(postId, body) {
+    return this.request(`/posts/${postId}/comments`, {
+      method: 'POST',
+      body: { body }
+    });
+  },
+
+  // Voting
+  async votePost(postId, type) {
+    return this.request(`/posts/${postId}/vote`, {
+      method: 'POST',
+      body: { type }
+    });
+  },
+
+  async voteComment(commentId, type) {
+    return this.request(`/comments/${commentId}/vote`, {
+      method: 'POST',
+      body: { type }
+    });
+  }
+};
+
         setSession(sessionUser);
         return { ok: true, user: sessionUser };
     }

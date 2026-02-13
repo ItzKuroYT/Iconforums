@@ -1,407 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>IconGens Forums</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-:root {
-    --bg: #0f1724;
-    --card: #0b1220;
-    --accent: #4fd1c5;
-    --muted: #94a3b8;
-    --danger: #ef4444;
-    --glass: rgba(255,255,255,0.03);
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    font-family: Inter, system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
-    color: #e6eef6;
-    background: linear-gradient(180deg, #071025 0%, #07162a 100%);
-    padding: 18px;
-}
-input, textarea, select, button {
-    font: inherit;
-    width: 100%;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.04);
-    background: transparent;
-    color: inherit;
-}
-button { cursor: pointer; }
-.wrap {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 18px;
-}
-.card {
-    background: var(--card);
-    padding: 14px;
-    border-radius: 10px;
-    box-shadow: 0 6px 18px rgba(2,6,23,.6);
-    border: 1px solid rgba(255,255,255,0.03);
-}
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-h1 { margin: 0 0 10px 0; font-size: 18px; }
-.muted { color: var(--muted); font-size: 13px; }
-.btn { padding: 8px 10px; border-radius: 8px; border: 0; background: var(--accent); color: #031019; }
-.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.04); color: var(--muted); }
-.danger { background: var(--danger); color: white; }
-.small { font-size: 12px; padding: 6px 8px; }
-.hidden { display: none; }
-.cats button {
-    display: block;
-    width: 100%;
-    text-align: left;
-    margin: 6px 0;
-    padding: 10px;
-    border-radius: 8px;
-    border: 0;
-    background: var(--glass);
-    color: #dbeafe;
-}
-.posts .post {
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0));
-    border: 1px solid rgba(255,255,255,0.03);
-}
-.post .meta {
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    justify-content: space-between;
-    gap: 6px;
-}
-.userBadge { background: #0b2a2a; padding: 6px 8px; border-radius: 8px; color: #bff1eb; font-weight: 600; }
-.staff { color: #ffd166; font-weight: 700; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IconForums - Discussion Community</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
-<aside class="card">
-    <div class="topbar">
-        <h1>IconGens Forums</h1>
-        <div id="authArea"></div>
+  <!-- Header / Navigation -->
+  <header class="header">
+    <div class="header-brand">
+      <h1 class="logo">IconForums</h1>
+      <p class="subtitle">Community Discussions</p>
     </div>
-
-    <div class="muted">Categories</div>
-    <div class="cats" id="categories">
-        <button data-cat="All">All</button>
-        <button data-cat="Bugs">Bugs</button>
-        <button data-cat="Patches">Patches</button>
-        <button data-cat="Looking for team">Looking for team</button>
-        <button data-cat="Market">Market</button>
+    <div class="header-actions">
+      <div id="authStatus" class="auth-status"></div>
     </div>
+  </header>
 
-    <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-    <div class="muted">Search posts</div>
-    <div style="margin-top:8px">
-        <div class="search" style="display:flex;gap:8px;margin-bottom:8px">
-            <input id="searchInput" placeholder="Search title or content..." />
-            <button id="clearSearch" class="secondary">Clear</button>
-        </div>
-        <select id="searchCategory">
-            <option value="">Any category</option>
-            <option>Bugs</option>
-            <option>Patches</option>
-            <option>Looking for team</option>
-            <option>Market</option>
-        </select>
-    </div>
+  <!-- Main Container -->
+  <div class="container">
+    <div class="main-grid">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <h3>New Post</h3>
+        <form id="newPostForm" class="post-form">
+          <input type="text" id="postTitle" placeholder="Post title..." maxlength="200" required>
+          <textarea id="postBody" placeholder="What's on your mind?" maxlength="10000" rows="6" required></textarea>
+          <select id="postCategory" class="form-input" required>
+            <option value="">Select category...</option>
+            <option value="General">General Discussion</option>
+            <option value="Bugs">Bugs</option>
+            <option value="Patches">Patches</option>
+            <option value="Looking for team">Looking for Team</option>
+            <option value="Market">Market</option>
+          </select>
+          <button type="submit" class="btn btn-primary">Post</button>
+        </form>
 
-    <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-    <div class="muted">Account</div>
-    <div style="margin-top:8px" id="authForms">
-        <div id="signupForm">
-            <div style="font-size:13px;margin-bottom:6px">Sign up</div>
-            <input id="suEmail" placeholder="Email" />
-            <input id="suUsername" placeholder="Username (unique)" />
-            <input id="suPassword" type="password" placeholder="Password" />
-            <div style="display:flex;gap:8px;margin-top:8px">
-                <button id="btnSignup" class="btn">Sign up</button>
-                <button id="showLogin" class="secondary">Login</button>
-            </div>
-            <div class="muted" style="font-size:12px;margin-top:8px">
-                Usernames must be unique. Add numbers/underscores if taken.
-            </div>
+        <div class="char-counts">
+          <small>Title: <span id="titleCount">0</span>/200</small>
+          <small>Body: <span id="bodyCount">0</span>/10000</small>
         </div>
 
-        <div id="loginForm" class="hidden">
-            <div style="font-size:13px;margin-bottom:6px">Login</div>
-            <input id="liUsername" placeholder="Username" />
-            <input id="liPassword" type="password" placeholder="Password" />
-            <div style="display:flex;gap:8px;margin-top:8px">
-                <button id="btnLogin" class="btn">Login</button>
-                <button id="showSignup" class="secondary">Sign up</button>
-            </div>
+        <h3 style="margin-top: 24px;">Categories</h3>
+        <div class="categories">
+          <button class="category-btn active" data-category="all">All Posts</button>
+          <button class="category-btn" data-category="General">General</button>
+          <button class="category-btn" data-category="Bugs">Bugs</button>
+          <button class="category-btn" data-category="Patches">Patches</button>
+          <button class="category-btn" data-category="Looking for team">Team</button>
+          <button class="category-btn" data-category="Market">Market</button>
         </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="posts-container">
+        <div id="loadingSpinner" class="spinner hidden"></div>
+        <div id="postsList" class="posts-list"></div>
+        <div id="noPostsMessage" class="empty-state hidden">
+          <p>No posts yet. Be the first to post!</p>
+        </div>
+        <div id="errorMessage" class="error-message hidden"></div>
+      </main>
     </div>
+  </div>
 
-    <div id="staffPanel" class="hidden" style="margin-top:12px">
-        <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-        <div class="muted">Staff Management (admin only)</div>
-        <input id="staffEmail" placeholder="User email to promote" />
-        <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="btnAddStaff" class="btn">Add Staff</button>
-            <button id="btnRevokeStaff" class="secondary">Revoke</button>
-        </div>
-        <div class="muted" style="font-size:12px;margin-top:8px">Promote by email. Only existing users can be promoted.</div>
+  <!-- Authentication Modal -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">Login</button>
+        <button class="tab-btn" data-tab="signup">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form">
+        <h2>Login</h2>
+        <input type="text" id="loginEmail" placeholder="Email or username..." required>
+        <input type="password" id="loginPassword" placeholder="Password..." required>
+        <button type="submit" class="btn btn-primary">Login</button>
+        <p class="form-message" id="loginMessage"></p>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="auth-form hidden">
+        <h2>Sign Up</h2>
+        <input type="email" id="signupEmail" placeholder="Email..." required>
+        <input type="text" id="signupUsername" placeholder="Username (3-20 chars)..." required>
+        <input type="password" id="signupPassword" placeholder="Password (8+ chars, letters & numbers)..." required>
+        <button type="submit" class="btn btn-primary">Create Account</button>
+        <p class="form-message" id="signupMessage"></p>
+      </form>
     </div>
-</aside>
+  </div>
 
-<main>
-<div class="card">
-    <div class="topbar">
-        <div>
-            <strong id="currentCategory">All</strong>
-            <div class="muted" style="font-size:13px">Discussion board</div>
-        </div>
-        <div>
-            <button id="btnNewPost" class="btn">New Post</button>
-            <button id="btnRefresh" class="secondary">Refresh</button>
-        </div>
+  <!-- Post Detail Modal -->
+  <div id="postDetailModal" class="modal hidden">
+    <div class="modal-content modal-large">
+      <button class="modal-close">&times;</button>
+      <div id="postDetailContent"></div>
     </div>
+  </div>
 
-    <div id="newPostArea" class="hidden" style="margin-bottom:12px">
-        <input id="postTitle" placeholder="Post title" />
-        <select id="postCategory" style="margin-top:8px">
-            <option>Bugs</option>
-            <option>Patches</option>
-            <option>Looking for team</option>
-            <option>Market</option>
-        </select>
-        <textarea id="postContent" rows="5" placeholder="Write your post..." style="margin-top:8px"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="btnCreatePost" class="btn">Create Post</button>
-            <button id="btnCancelPost" class="secondary">Cancel</button>
-        </div>
-        <div id="postError" class="muted small" style="margin-top:8px"></div>
-    </div>
-
-    <div class="muted" style="margin-bottom:8px">Results</div>
-    <div id="postsList" class="posts"></div>
-</div>
-
-<div class="card" style="margin-top:12px">
-    <div class="muted">About / Notes</div>
-    <p class="muted" style="font-size:13px">
-        This is a front-end demo forum. Data is stored in browser localStorage. For production, implement a backend, database, authentication, rate-limiting, and content moderation.
-    </p>
-</div>
-</main>
-</div>
-
-<script>
-const API_BASE = window.API_BASE || '';
-const LS_USERS = 'ig_users_v1';
-const LS_POSTS = 'ig_posts_v1';
-const ADMIN_EMAIL = 'admin@example.com';
-const el = id=>document.getElementById(id);
-const now = ()=>new Date().toISOString();
-
-const storage = {
-    getUsers: ()=>JSON.parse(localStorage.getItem(LS_USERS)||'[]'),
-    setUsers: u=>localStorage.setItem(LS_USERS,JSON.stringify(u)),
-    async getPosts() {
-        if(API_BASE){
-            try{
-                const res = await fetch(API_BASE+'/posts');
-                if(!res.ok) throw new Error('Failed');
-                return await res.json();
-            }catch(e){ console.warn('Fallback to local posts',e); }
-        }
-        return JSON.parse(localStorage.getItem(LS_POSTS)||'[]');
-    },
-    setPosts: p=>localStorage.setItem(LS_POSTS,JSON.stringify(p))
-};
-
-// Seed initial users & posts
-(function seed(){
-    let users = storage.getUsers();
-    if(!users.find(u=>u.email===ADMIN_EMAIL)) users.push({email:ADMIN_EMAIL,username:'admin',password:'admin',staff:true,created:now()});
-    if(!users.find(u=>u.username==='alice')) users.push({email:'alice@ex.com',username:'alice',password:'pass',staff:false,created:now()});
-    storage.setUsers(users);
-
-    let posts = JSON.parse(localStorage.getItem(LS_POSTS)||'[]');
-    if(posts.length===0){
-        posts = [
-            {id:1,title:'Welcome to IconGens',content:'First post. Use this demo to test features.','category':'Patches','author':'admin','authorEmail':ADMIN_EMAIL,created:now(),pinned:true},
-            {id:2,title:'Looking for a plot teammember',content:'i need a team member to help with my plot','category':'Looking for team','author':'alice','authorEmail':'alice@ex.com',created:now(),pinned:false}
-        ];
-        storage.setPosts(posts);
-    }
-})();
-
-let state={currentUser:null,filterText:'',filterCategory:'',selectedCategory:'All'};
-
-function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function canCreate(){ return !!state.currentUser; }
-function canModerate(){ return state.currentUser && state.currentUser.staff; }
-function isStaff(email){ return storage.getUsers().find(u=>u.email===email && u.staff); }
-
-function renderAuth(){
-    const authArea = el('authArea');
-    const user = state.currentUser;
-    authArea.innerHTML='';
-    if(user){
-        const div=document.createElement('div');
-        div.innerHTML=`<span class="userBadge">${escapeHtml(user.username)}</span> <button id="btnLogout" class="secondary small">Logout</button>`;
-        authArea.appendChild(div);
-        el('btnLogout').onclick=()=>{
-            state.currentUser=null;
-            localStorage.removeItem('ig_user');
-            renderAuth(); renderStaffPanel(); renderPosts();
-        };
-    } else authArea.innerHTML='<div class="muted small">Not signed in</div>';
-}
-
-function renderStaffPanel(){
-    const panel = el('staffPanel');
-    if(state.currentUser && state.currentUser.email===ADMIN_EMAIL) panel.classList.remove('hidden');
-    else panel.classList.add('hidden');
-}
-
-async function renderPosts(){
-    const raw = await storage.getPosts();
-    const posts = (Array.isArray(raw)?raw:[]).slice().sort((a,b)=>{
-        if(a.pinned&&!b.pinned) return -1;
-        if(!a.pinned&&b.pinned) return 1;
-        return new Date(b.created)-new Date(a.created);
-    });
-    const container = el('postsList');
-    container.innerHTML='';
-    const q = state.filterText.toLowerCase().trim();
-    const catFilter = state.filterCategory;
-    posts.filter(p=>{
-        if(catFilter && p.category!==catFilter) return false;
-        if(!q) return true;
-        return (p.title+p.content+p.author).toLowerCase().includes(q);
-    }).forEach(p=>{
-        const d = document.createElement('div');
-        d.className='post';
-        d.innerHTML=`
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
-                <div>
-                    <div style="display:flex;gap:8px;align-items:center">
-                        <strong>${escapeHtml(p.title)}</strong>
-                        ${p.pinned?'<span class="staff small">PINNED</span>':''}
-                    </div>
-                    <div class="meta">
-                        <div>${escapeHtml(p.category)} • by <span class="${isStaff(p.authorEmail)?'staff':''}">${escapeHtml(p.author)}</span></div>
-                        <div>${new Date(p.created).toLocaleString()}</div>
-                    </div>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:6px">
-                    <button class="secondary small" data-id="${p.id}" data-action="view">View</button>
-                    ${canModerate()?`<button class="small" data-id="${p.id}" data-action="delete">Delete</button><button class="small" data-id="${p.id}" data-action="pin">${p.pinned?'Unpin':'Pin'}</button>`:''}
-                </div>
-            </div>
-            <p style="margin-top:8px;color:var(--muted)">${escapeHtml(p.content).slice(0,300)}${p.content.length>300?'…':''}</p>
-        `;
-        container.appendChild(d);
-    });
-    bindPostButtons();
-}
-
-function bindPostButtons(){
-    document.querySelectorAll('[data-action="view"]').forEach(b=>b.onclick=()=>viewPost(+b.dataset.id));
-    document.querySelectorAll('[data-action="delete"]').forEach(b=>b.onclick=()=>{if(confirm('Delete post?')) deletePost(+b.dataset.id);});
-    document.querySelectorAll('[data-action="pin"]').forEach(b=>b.onclick=()=>togglePin(+b.dataset.id));
-}
-
-function viewPost(id){ window.location.href='post.html?id='+encodeURIComponent(id); }
-
-async function deletePost(id){
-    const posts = await storage.getPosts();
-    storage.setPosts(posts.filter(p=>p.id!==id));
-    renderPosts();
-}
-
-async function togglePin(id){
-    const posts = await storage.getPosts();
-    const p = posts.find(x=>x.id===id);
-    if(!p) return;
-    p.pinned=!p.pinned;
-    storage.setPosts(posts);
-    renderPosts();
-}
-
-function signup(){
-    const email=el('suEmail').value.trim(), username=el('suUsername').value.trim(), pwd=el('suPassword').value.trim();
-    const users=storage.getUsers();
-    if(!email||!username||!pwd){ el('postError').textContent='All fields required'; return; }
-    if(users.find(u=>u.username===username)){ el('postError').textContent='Username taken'; return; }
-    const user={email,username,password:pwd,staff:false,created:now()};
-    users.push(user); storage.setUsers(users);
-    state.currentUser=user; localStorage.setItem('ig_user',JSON.stringify(user));
-    el('postError').textContent=''; renderAuth(); renderStaffPanel(); renderPosts();
-}
-
-function login(){
-    const username=el('liUsername').value.trim(), pwd=el('liPassword').value.trim();
-    const user=storage.getUsers().find(u=>u.username===username&&u.password===pwd);
-    if(!user){ el('postError').textContent='Invalid credentials'; return; }
-    state.currentUser=user; localStorage.setItem('ig_user',JSON.stringify(user));
-    el('postError').textContent=''; renderAuth(); renderStaffPanel(); renderPosts();
-}
-
-async function createPost(){
-    const title = el('postTitle').value.trim();
-    const content = el('postContent').value.trim();
-    const category = el('postCategory').value;
-    if(!title||!content){ el('postError').textContent='Title & content required'; return; }
-    const posts = await storage.getPosts();
-    const newPost = {id:posts.length?Math.max(...posts.map(p=>p.id))+1:1,title,content,category,author:state.currentUser.username,authorEmail:state.currentUser.email,created:now(),pinned:false};
-    posts.push(newPost); storage.setPosts(posts);
-    el('postTitle').value=''; el('postContent').value=''; el('postError').textContent='';
-    el('newPostArea').classList.add('hidden'); renderPosts();
-}
-
-function modifyStaff(add=true){
-    const email = el('staffEmail').value.trim();
-    const users = storage.getUsers();
-    const user = users.find(u=>u.email===email);
-    if(!user){ alert('User not found'); return; }
-    user.staff=add; storage.setUsers(users); renderPosts();
-}
-
-function init(){
-    document.querySelectorAll('#categories button').forEach(btn=>btn.onclick=()=>{
-        state.selectedCategory=btn.dataset.cat;
-        el('currentCategory').textContent=btn.dataset.cat;
-        state.filterCategory=btn.dataset.cat==='All'?'':btn.dataset.cat;
-        renderPosts();
-    });
-    el('searchInput').oninput=e=>{ state.filterText=e.target.value; renderPosts(); };
-    el('clearSearch').onclick=()=>{ el('searchInput').value=''; state.filterText=''; renderPosts(); };
-    el('searchCategory').onchange=e=>{ state.filterCategory=e.target.value; renderPosts(); };
-    el('showLogin').onclick=()=>{ el('signupForm').classList.add('hidden'); el('loginForm').classList.remove('hidden'); };
-    el('showSignup').onclick=()=>{ el('loginForm').classList.add('hidden'); el('signupForm').classList.remove('hidden'); };
-    el('btnSignup').onclick=signup;
-    el('btnLogin').onclick=login;
-    el('btnNewPost').onclick=()=>el('newPostArea').classList.remove('hidden');
-    el('btnCancelPost').onclick=()=>{ el('newPostArea').classList.add('hidden'); el('postTitle').value=''; el('postContent').value=''; el('postError').textContent=''; };
-    el('btnCreatePost').onclick=createPost;
-    el('btnAddStaff').onclick=()=>modifyStaff(true);
-    el('btnRevokeStaff').onclick=()=>modifyStaff(false);
-    const savedUser=JSON.parse(localStorage.getItem('ig_user')||'null');
-    if(savedUser) state.currentUser=savedUser;
-    renderAuth(); renderStaffPanel(); renderPosts();
-}
-
-window.onload=init;
-</script>
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

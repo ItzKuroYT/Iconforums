@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "JWT_SECRET": "@jwt_secret",
+    "NODE_ENV": "production",
+    "RATE_LIMIT_POSTS": "10",
+    "RATE_LIMIT_COMMENTS": "30",
+    "RATE_LIMIT_VOTES": "50",
+    "MAX_POST_TITLE_CHARS": "200",
+    "MAX_POST_BODY_CHARS": "10000",
+    "MAX_COMMENT_CHARS": "2000"
+  }
+}
